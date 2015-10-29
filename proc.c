@@ -464,3 +464,65 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+void do_mprotect(struct proc* proc) {
+	uint vpn;
+	for (vpn = 0; vpn < proc->sz; vpn += 1) {
+		pte_t* pte;
+		pte = (pte_t*) walkpgdir(proc->pgdir, (void*) vpn, 0);
+		if (pte != 0) {
+			pte = pte & (~PTE_W);
+		} else {
+			cprintf("Error");
+		}
+	}
+}
+
+void do_munprotect(struct proc* proc) {
+	uint vpn;
+	for (vpn = 0; vpn < proc->sz; vpn += 1) {
+		pte_t* pte;
+		pte = (pte_t*) walkpgdir(proc->pgdir, (void*) vpn, 0);		
+		if (pte != 0) {
+			pte = pte ^ (~PTE_W);
+		} else {
+			cprintf("Error");
+		}
+	}
+}
+
+int kern_mprotect(void* addr, int len) {
+	int i = 0;
+	int start = (int) addr;
+
+	if (start % PGSIZE != 0) return -1;
+	
+	if (start > proc->sz) return -1;
+	
+	// inherit on fork
+	acquire(&ptable.lock);
+	for (i = start; i < start + len * PGSIZE; i += PGSIZE) {
+		do_mprotect(proc);
+	}
+	
+	release(&ptable.lock);
+	return 0;
+}
+
+int kern_munprotect(void* addr, int len) {
+	int i = 0;
+	int start = (int) addr;
+
+	if (start % PGSIZE != 0) return -1;
+	
+	if (start > proc->sz) return -1;
+	
+	// inherit on fork
+	acquire(&ptable.lock);
+	for (i = start; i < start + len * PGSIZE; i += PGSIZE) {
+		do_munprotect(proc);
+	}
+	
+	release(&ptable.lock);
+	return 0;
+}
