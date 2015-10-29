@@ -119,6 +119,14 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 
+//new lines
+int kern_mprotect(void*,int);
+void do_mprotect(struct proc *);
+
+int kern_munprotect(void*,int);
+void do_munprotect(struct proc *);
+
+
 // swtch.S
 void            swtch(struct context**, struct context*);
 
