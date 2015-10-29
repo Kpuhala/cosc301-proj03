@@ -101,7 +101,7 @@ int sys_mprotect(void) {
     if (argint(0, &addr) < 0) {
         return -1;
     }
-    return kern_mprotect(addr,pid);
+    return kern_mprotect((void*) addr,pid);
 }
 
 int sys_munprotect(void) {
@@ -115,6 +115,6 @@ int sys_munprotect(void) {
     if (argint(0, &addr) < 0) {
         return -1;
     }
-    return kern_munprotect(addr,pid);
+    return kern_munprotect((void*) addr,pid);
 }
 

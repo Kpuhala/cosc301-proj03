@@ -384,3 +384,29 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //PAGEBREAK!
 // Blank page.
 
+void do_mprotect(struct proc* proc) {
+	uint vpn;
+	for (vpn = 0; vpn < proc->sz; vpn += 1) {
+		pte_t* pte;
+		pte = (pte_t*) walkpgdir(proc->pgdir, (void*) vpn, 0);
+		if (pte != 0) {
+			pte = (pte_t*) (((int) pte) & (~PTE_W));
+		} else {
+			cprintf("Error");
+		}
+	}
+}
+
+void do_munprotect(struct proc* proc) {
+	uint vpn;
+	for (vpn = 0; vpn < proc->sz; vpn += 1) {
+		pte_t* pte;
+		pte = (pte_t*) walkpgdir(proc->pgdir, (void*) vpn, 0);		
+		if (pte != 0) {
+			pte = (pte_t*) (((int) pte) ^ (~PTE_W));
+		} else {
+			cprintf("Error");
+		}
+	}
+}
+

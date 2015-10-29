@@ -465,32 +465,6 @@ procdump(void)
   }
 }
 
-void do_mprotect(struct proc* proc) {
-	uint vpn;
-	for (vpn = 0; vpn < proc->sz; vpn += 1) {
-		pte_t* pte;
-		pte = (pte_t*) walkpgdir(proc->pgdir, (void*) vpn, 0);
-		if (pte != 0) {
-			pte = pte & (~PTE_W);
-		} else {
-			cprintf("Error");
-		}
-	}
-}
-
-void do_munprotect(struct proc* proc) {
-	uint vpn;
-	for (vpn = 0; vpn < proc->sz; vpn += 1) {
-		pte_t* pte;
-		pte = (pte_t*) walkpgdir(proc->pgdir, (void*) vpn, 0);		
-		if (pte != 0) {
-			pte = pte ^ (~PTE_W);
-		} else {
-			cprintf("Error");
-		}
-	}
-}
-
 int kern_mprotect(void* addr, int len) {
 	int i = 0;
 	int start = (int) addr;
