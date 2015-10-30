@@ -479,7 +479,7 @@ int kern_mprotect(struct proc* process, void *addr, int len) {
 	int i;
 	for (i = start; i < start + (len * PGSIZE); i+= PGSIZE) {
 		if (do_mprotect(process, (void*) i) == -1)
-			addr = addr; // some sort of error handling
+			return -1; // propagate -1 to user process
 	}
 	lcr3(v2p(process->pgdir));
 	return 0;
@@ -499,7 +499,7 @@ int kern_munprotect(struct proc* process,void* addr, int len) {
 	int i;
 	for (i = start; i < start + (len * PGSIZE); i+= PGSIZE) {
 		if (do_munprotect(process, (void*) i) == -1)
-			addr = addr; // some sort of error handling
+			return -1; // propagate -1 to user process
 	}
 
 	lcr3(v2p(process->pgdir));
