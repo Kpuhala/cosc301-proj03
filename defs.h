@@ -120,11 +120,11 @@ void            wakeup(void*);
 void            yield(void);
 
 //new lines
-int kern_mprotect(void*,int);
-void do_mprotect(struct proc *);
+int kern_mprotect(struct proc*, void*,int);
+int do_mprotect(struct proc*, void *addr);
 
-int kern_munprotect(void*,int);
-void do_munprotect(struct proc *);
+int kern_munprotect(struct proc*, void*,int);
+int do_munprotect(struct proc*, void *addr);
 
 
 // swtch.S

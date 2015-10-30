@@ -465,38 +465,39 @@ procdump(void)
   }
 }
 
-int kern_mprotect(void* addr, int len) {
-	int i = 0;
-	int start = (int) addr;
-
+int kern_mprotect(struct proc* p, void *addr, int len) {
+	int start = (uint) addr;
 	if (start % PGSIZE != 0) return -1;
-	
-	if (start > proc->sz) return -1;
-	
-	// inherit on fork
-	acquire(&ptable.lock);
-	for (i = start; i < start + len * PGSIZE; i += PGSIZE) {
-		do_mprotect(proc);
+	if (addr == 0) return -1;
+	if (start > p ->sz) return -1;
+	if ((uint) addr % PGSIZE != 0 || (uint) addr > p->sz 
+		|| len <= 0 || ((uint) addr + PGSIZE*len) > p->sz) {
+		return -1;
 	}
-	
-	release(&ptable.lock);
+	int i;
+	for (i = 0; i < len; i++) {
+		do_mprotect(p, addr);
+		addr += PGSIZE;
+	}
+	lcr3(v2p(p->pgdir));
 	return 0;
 }
 
-int kern_munprotect(void* addr, int len) {
-	int i = 0;
+int kern_munprotect(struct proc *p,void* addr, int len) {
 	int start = (int) addr;
 
 	if (start % PGSIZE != 0) return -1;
-	
+	if (addr == 0) return -1;
 	if (start > proc->sz) return -1;
-	
-	// inherit on fork
-	acquire(&ptable.lock);
-	for (i = start; i < start + len * PGSIZE; i += PGSIZE) {
-		do_munprotect(proc);
+	if ((uint) addr % PGSIZE != 0 || (uint) addr > proc->sz 
+		|| len <= 0 || ((uint) addr + PGSIZE*len) > proc->sz) {
+		return -1;
 	}
-	
-	release(&ptable.lock);
+	int i;
+	for (i = 0; i < len; i++) {
+		do_munprotect(p, addr);
+		addr += PGSIZE;
+	}
+	lcr3(v2p(p->pgdir));
 	return 0;
 }
