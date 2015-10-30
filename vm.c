@@ -377,22 +377,22 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
-int do_mprotect(struct proc *p, void *addr) {
-	pte_t *pte = walkpgdir(p->pgdir, addr, 0);
+int do_mprotect(struct proc* process, void *addr) {
+	pte_t* pte = walkpgdir(process->pgdir, addr, 0);
 
 	if (pte == 0) {
-		return -1;
+		return -1; // error
 	}
 	
 	*pte &= ~PTE_W;
 	return 0;
 }
 
-int do_munprotect(struct proc *p, void *addr) {
-	pte_t *pte = walkpgdir(p->pgdir, addr, 0);
+int do_munprotect(struct proc *process, void *addr) {
+	pte_t* pte = walkpgdir(process->pgdir, addr, 0);
 
 	if (pte == 0) {
-		return -1;
+		return -1; // error
 	}
 
 	*pte |= PTE_W;

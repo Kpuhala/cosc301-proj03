@@ -465,43 +465,43 @@ procdump(void)
   }
 }
 
-int kern_mprotect(struct proc* p, void *addr, int len) {
-	unsigned int start = (unsigned int) addr;
-
-	//bounds checking
-	if (start % PGSIZE != 0) return -1;
-	if (addr == 0) return -1;
-	if (start > p->sz) return -1;
-	if (len <= 0) return -1;
-	if ((start + PGSIZE*len) > p->sz) return -1;
-
-	int i;
-	for (i = 0; i < len; i++) {
-		if (do_mprotect(p, addr) == -1)
-			addr = addr; // some sort of error handling
-		addr += PGSIZE;
-	}
-	lcr3(v2p(p->pgdir));
-	return 0;
-}
-
-int kern_munprotect(struct proc *p,void* addr, int len) {
+int kern_mprotect(struct proc* process, void *addr, int len) {
 	unsigned int start = (unsigned int) addr;
 
 	//bounds checking
 	if (addr == 0) return -1; // fail on null address
 
 	if (start % PGSIZE != 0) return -1;
-	if (start > p->sz) return -1;
+	if (start > process->sz) return -1;
 	if (len <= 0) return -1;
-	if ((start + PGSIZE*len) > p->sz) return -1;
+	if ((start + PGSIZE*len) > process->sz) return -1;
 
 	int i;
-	for (i = 0; i < len; i++) {
-		if (do_munprotect(p, addr) == -1)
+	for (i = start; i < start + (len * PGSIZE); i+= PGSIZE) {
+		if (do_mprotect(process, (void*) i) == -1)
 			addr = addr; // some sort of error handling
-		addr += PGSIZE;
 	}
-	lcr3(v2p(p->pgdir));
+	lcr3(v2p(process->pgdir));
+	return 0;
+}
+
+int kern_munprotect(struct proc* process,void* addr, int len) {
+	unsigned int start = (unsigned int) addr;
+
+	//bounds checking
+	if (addr == 0) return -1; // fail on null address
+
+	if (start % PGSIZE != 0) return -1;
+	if (start > process->sz) return -1;
+	if (len <= 0) return -1;
+	if ((start + PGSIZE*len) > process->sz) return -1;
+
+	int i;
+	for (i = start; i < start + (len * PGSIZE); i+= PGSIZE) {
+		if (do_munprotect(process, (void*) i) == -1)
+			addr = addr; // some sort of error handling
+	}
+
+	lcr3(v2p(process->pgdir));
 	return 0;
 }
