@@ -466,17 +466,19 @@ procdump(void)
 }
 
 int kern_mprotect(struct proc* p, void *addr, int len) {
-	int start = (uint) addr;
+	unsigned int start = (unsigned int) addr;
+
+	//bounds checking
 	if (start % PGSIZE != 0) return -1;
 	if (addr == 0) return -1;
-	if (start > p ->sz) return -1;
-	if ((uint) addr % PGSIZE != 0 || (uint) addr > p->sz 
-		|| len <= 0 || ((uint) addr + PGSIZE*len) > p->sz) {
-		return -1;
-	}
+	if (start > p->sz) return -1;
+	if (len <= 0) return -1;
+	if ((start + PGSIZE*len) > p->sz) return -1;
+
 	int i;
 	for (i = 0; i < len; i++) {
-		do_mprotect(p, addr);
+		if (do_mprotect(p, addr) == -1)
+			addr = addr; // some sort of error handling
 		addr += PGSIZE;
 	}
 	lcr3(v2p(p->pgdir));
@@ -484,18 +486,20 @@ int kern_mprotect(struct proc* p, void *addr, int len) {
 }
 
 int kern_munprotect(struct proc *p,void* addr, int len) {
-	int start = (int) addr;
+	unsigned int start = (unsigned int) addr;
+
+	//bounds checking
+	if (addr == 0) return -1; // fail on null address
 
 	if (start % PGSIZE != 0) return -1;
-	if (addr == 0) return -1;
-	if (start > proc->sz) return -1;
-	if ((uint) addr % PGSIZE != 0 || (uint) addr > proc->sz 
-		|| len <= 0 || ((uint) addr + PGSIZE*len) > proc->sz) {
-		return -1;
-	}
+	if (start > p->sz) return -1;
+	if (len <= 0) return -1;
+	if ((start + PGSIZE*len) > p->sz) return -1;
+
 	int i;
 	for (i = 0; i < len; i++) {
-		do_munprotect(p, addr);
+		if (do_munprotect(p, addr) == -1)
+			addr = addr; // some sort of error handling
 		addr += PGSIZE;
 	}
 	lcr3(v2p(p->pgdir));
